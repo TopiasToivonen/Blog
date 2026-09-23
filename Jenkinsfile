@@ -32,7 +32,7 @@ pipeline {
         }
 	stage('Nikto Scan') {
 	    steps {
-		sh 'docker run --rm --network host -v $WORKSPACE:/tmp ghcr.io/sullo/nikto:latest -h http://localhost:3000 -Format txt -o /tmp/nikto-report.txt'
+		sh 'docker run --rm --network host --user $(id -u):$(id -g) -v $WORKSPACE:/tmp ghcr.io/sullo/nikto:latest -h http://localhost:3000 -Format txt -o /tmp/nikto-report.txt'
 	    }
 	}
     }
