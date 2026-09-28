@@ -64,7 +64,6 @@ describe('POST /auth/register', () => {
 describe('POST /auth/login', () => {
   beforeEach(() => createUser('alice', 'secret123'));
 
-  /*
   test('with the right password sets a sessionId cookie and redirects to /', async () => {
     const res = await request(app)
       .post('/auth/login')
@@ -88,7 +87,6 @@ describe('POST /auth/login', () => {
     const user = await getUser('alice');
     expect(user.sessionId).toBe(cookieValue);
   });
-  */
 
   test('with a wrong password shows an error and sets no cookie', async () => {
     const res = await request(app)
