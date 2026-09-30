@@ -86,6 +86,31 @@ describe('/new-post', () => {
     expect(posts[0].title).toBe('My title');
     expect(posts[0].content).toBe('My content');
   });
+
+  test('POST with an empty title shows an error and saves nothing', async () => {
+    const res = await request(app)
+      .post('/new-post')
+      .set('Cookie', USER_COOKIE)
+      .type('form')
+      .send({ title: '', content: 'No title' });
+
+    expect(res.status).toBe(400);
+    expect(res.text).toContain('Title is required');
+    expect(await getPosts()).toHaveLength(0);
+  });
+
+  test('POST with an empty content shows an error and saves nothing', async () => {
+    const res = await request(app)
+      .post('/new-post')
+      .set('Cookie', USER_COOKIE)
+      .type('form')
+      .send({ title: 'No content', content: '' });
+
+    expect(res.status).toBe(400);
+    expect(res.text).toContain('Content is required');
+    expect(await getPosts()).toHaveLength(0);
+  });
+
 });
 
 describe('GET /admin', () => {
@@ -106,6 +131,7 @@ describe('GET /admin', () => {
     expect(res.status).toBe(200);
     expect(res.text).toContain('Admin Page');
   });
+
 });
 
 describe('navigation menu', () => {
@@ -125,6 +151,7 @@ describe('navigation menu', () => {
     const res = await request(app).get('/new-post').set('Cookie', ADMIN_COOKIE);
     expect(res.text).toContain('href="/admin"');
   });
+
 });
 
 describe('other requests', () => {

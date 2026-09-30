@@ -36,6 +36,21 @@ describe('POST /auth/register', () => {
     expect(await countUsers()).toBe(1);
   });
 
+  test('creates a new user and logs in as that user, redirects to /', async () => {
+    await request(app)
+      .post('/auth/register')
+      .type('form')
+      .send({ username: 'alice', password: 'secret123' });
+
+    const res = await request(app)
+      .post('/auth/login')
+      .type('form')
+      .send({ username: 'alice', password: 'secret123' });
+    
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toBe('/');
+  });
+
   test('stores a bcrypt hash, not the plain password', async () => {
     await request(app)
       .post('/auth/register')
@@ -59,6 +74,38 @@ describe('POST /auth/register', () => {
     const user = await getUser('alice');
     expect(bcrypt.compareSync('original-password', user.password)).toBe(true);
   });
+
+  test('special characters do not cause an unexpected error in register screen', async () => {
+    const res = await request(app)
+      .post('/auth/register')
+      .type('form')
+      .send({ username: "' OR 1=1 --", password: 'test123' });
+
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toBe('/auth/login');
+    expect(await countUsers()).toBe(1);
+  });
+
+  test('user can not be created with an empty username', async () => {
+    const res = await request(app)
+      .post('/auth/register')
+      .type('form')
+      .send({ username: '', password: 'test123' });
+
+    expect(res.status).toBe(400);
+    expect(await countUsers()).toBe(0);
+  });
+
+  test('user can not be created with an empty password', async () => {
+    const res = await request(app)
+      .post('/auth/register')
+      .type('form')
+      .send({ username: 'bob', password: '' });
+
+    expect(res.status).toBe(400);
+    expect(await countUsers()).toBe(0);
+  });
+
 });
 
 describe('POST /auth/login', () => {
@@ -88,6 +135,22 @@ describe('POST /auth/login', () => {
     expect(user.sessionId).toBe(cookieValue);
   });
 
+  test('two sessions of the same user have different sessionIds', async () => {
+    const res1 = await request(app)
+      .post('/auth/login')
+      .type('form')
+      .send({ username: 'alice', password: 'secret123' });
+
+    const res2 = await request(app)
+      .post('/auth/login')
+      .type('form')
+      .send({ username: 'alice', password: 'secret123' });
+
+    const cookieValue1 = res1.headers['set-cookie'][0].split(';')[0].split('=')[1];
+    const cookieValue2 = res2.headers['set-cookie'][0].split(';')[0].split('=')[1];
+    expect(cookieValue1).not.toBe(cookieValue2);
+  });
+
   test('with a wrong password shows an error and sets no cookie', async () => {
     const res = await request(app)
       .post('/auth/login')
@@ -99,7 +162,7 @@ describe('POST /auth/login', () => {
     expect(res.headers['set-cookie']).toBeUndefined();
   });
 
-  test('with an unknown username shows the same error and sets no cookie', async () => {
+  test('with an unknown username shows an error and sets no cookie', async () => {
     const res = await request(app)
       .post('/auth/login')
       .type('form')
@@ -108,6 +171,20 @@ describe('POST /auth/login', () => {
     expect(res.status).toBe(200);
     expect(res.text).toContain('Invalid username or password');
     expect(res.headers['set-cookie']).toBeUndefined();
+  });
+
+  test('same error is displayed for a non-existing user and a wrong password', async () => {
+    const res1 = await request(app)
+      .post('/auth/login')
+      .type('form')
+      .send({ username: 'nobody', password: 'secret123' });
+
+    const res2 = await request(app)
+      .post('/auth/login')
+      .type('form')
+      .send({ username: 'alice', password: 'wrong-password' });
+
+    expect(res1.text).toBe(res2.text);
   });
 });
 
