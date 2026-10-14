@@ -13,7 +13,7 @@ router.post('/login', (req, res) => {
     db.get("SELECT * FROM users WHERE username = ?", [username], (err, user) => {
         if (err) throw err;
         if (user && bcrypt.compareSync(password, user.password)) {
-            const sessionId = crypto.createHash('sha256').update(user.username).digest('hex');
+            const sessionId = crypto.randomBytes(32).toString('hex');
             db.run("UPDATE users SET sessionId = ? WHERE username = ?", [sessionId, user.username], (err) => {
                 if (err) throw err;
                 res.cookie('sessionId', sessionId, { httpOnly: true });
@@ -32,6 +32,12 @@ router.get('/register', (req, res) => {
 
 router.post('/register', (req, res) => {
     const { username, password } = req.body;
+    if (!username){
+        return res.status(400).send('Username may not be empty');
+    }
+    if (password.length <= 8) {
+        return res.status(400).send('Password must be longer than 8 characters');
+    }
     const hashedPassword = bcrypt.hashSync(password, 10);
     db.get("SELECT * FROM users WHERE username = ?", [username], (err, user) => {
         if (err) throw err;

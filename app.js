@@ -58,6 +58,12 @@ app.post('/new-post', (req, res) => {
       return res.redirect('/auth/login');
   }
   const { title, content } = req.body;
+  if (!title) {
+      return res.status(400).send('Title is required');
+  }
+  if (!content) {
+      return res.status(400).send('Content is required');
+  }
   db.run("INSERT INTO posts (title, content) VALUES (?, ?)", [title, content], (err) => {
       if (err) throw err;
       res.redirect('/');

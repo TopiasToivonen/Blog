@@ -79,7 +79,7 @@ describe('POST /auth/register', () => {
     const res = await request(app)
       .post('/auth/register')
       .type('form')
-      .send({ username: "' OR 1=1 --", password: 'test123' });
+      .send({ username: "' OR 1=1 --", password: 'testtest123' });
 
     expect(res.status).toBe(302);
     expect(res.headers.location).toBe('/auth/login');
@@ -90,7 +90,7 @@ describe('POST /auth/register', () => {
     const res = await request(app)
       .post('/auth/register')
       .type('form')
-      .send({ username: '', password: 'test123' });
+      .send({ username: '', password: 'testtest123' });
 
     expect(res.status).toBe(400);
     expect(await countUsers()).toBe(0);
