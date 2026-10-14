@@ -6,7 +6,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                sh 'git pull origin main'
+                sh 'git pull origin fixed'
             }
         }
         stage('Unit Tests') {
