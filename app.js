@@ -19,7 +19,6 @@ app.use(cookieParser());
 // Middleware to check for session cookie
 app.use((req, res, next) => {
     if (req.cookies.sessionId) {
-        console.log('SessionId found: ', req.cookies.sessionId);
         db.get("SELECT * FROM users WHERE sessionId = ?", [req.cookies.sessionId], (err, user) => {
             if (err) throw err;
             if (user) {

@@ -17,7 +17,6 @@ router.post('/login', (req, res) => {
             db.run("UPDATE users SET sessionId = ? WHERE username = ?", [sessionId, user.username], (err) => {
                 if (err) throw err;
                 res.cookie('sessionId', sessionId, { httpOnly: true });
-                console.log('Login successful, sessionId:', sessionId);
                 res.redirect('/');
             });
         } else {
