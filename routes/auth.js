@@ -42,7 +42,7 @@ router.post("/register", (req, res) => {
     return res.status(400).send("Username may not be empty");
   }
   if (password.length < 8) {
-    return res.status(400).send("Password must be longer than 8 characters");
+    return res.status(400).send("Password must be at least 8 characters long");
   }
   const hashedPassword = bcrypt.hashSync(password, 10);
   db.get("SELECT * FROM users WHERE username = ?", [username], (err, user) => {
